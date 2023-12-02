@@ -1,8 +1,8 @@
 import socket
 import threading
 from typing import Callable
-from protocol import Request
-from communication import Communication
+from .protocol import Request
+from .communication import Communication
 
 
 class Server:
