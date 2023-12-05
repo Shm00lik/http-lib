@@ -38,12 +38,13 @@ class Request:
     def __init__(self, data: str) -> None:
         self.splittedData = data.split("\r\n")
 
-        self.method = None
-        self.url = None
-        self.params = None
-        self.body = None
-        self.headers = None
-        self.payload = None
+        self.method: Request.RequestMethod = Request.RequestMethod.UNKNOWN
+        self.type: Request.RequestType = Request.RequestType.UNKNOWN
+        self.url: str = ""
+        self.params: dict[str, str] = {}
+        self.body: str = ""
+        self.headers: dict[str, str] = {}
+        self.payload: dict[str, str] = {}
 
         if len(self.splittedData) < 2:
             return
@@ -52,6 +53,7 @@ class Request:
 
     def parse(self) -> None:
         self.method = self.getMethod()
+        self.type = self.getType()
         self.url = self.getUrl()
         self.params = self.getParams()
         self.body = self.getBody()
@@ -60,6 +62,9 @@ class Request:
 
     def getMethod(self) -> RequestMethod:
         return Request.RequestMethod.fromRequestData(self.splittedData[0])
+
+    def getType(self) -> RequestType:
+        return Request.RequestType.fromUrl(self.getUrl())
 
     def getUrl(self) -> str:
         return self.splittedData[0].split(" ")[1].split("?")[0]
