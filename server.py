@@ -2,13 +2,13 @@ import socket
 import threading
 from typing import Callable
 from .protocol import Request
-from .communication import Communication
+from .client import Client
 
 
 class Server:
     def __init__(
         self,
-        clientCallback: Callable[[Request, socket.socket, tuple], None],
+        clientCallback: Callable[[Request, Client], None],
         host: str = "127.0.0.1",
         port: int = 3339,
         backlog: int = 5,
@@ -24,7 +24,7 @@ class Server:
 
         self.serverThread: threading.Thread = threading.Thread(target=self.run)
         self.maxClients: int = maxClients
-        self.clients: list[socket.socket] = []
+        self.clients: list[Client] = []
         self.threads: list[threading.Thread] = []
         self.socket: socket.socket = socket.socket()
 
@@ -61,11 +61,11 @@ class Server:
 
     def accept(self) -> None:
         clientSocket, clientAddress = self.socket.accept()
-        self.clients.append(clientSocket)
 
-        t = threading.Thread(
-            target=self.handleClient, args=(clientSocket, clientAddress)
-        )
+        newClient = Client(clientSocket, clientAddress)
+        self.clients.append(newClient)
+
+        t = threading.Thread(target=self.handleClient, args=(newClient,))
 
         self.threads.append(t)
         t.start()
@@ -80,14 +80,10 @@ class Server:
         for thread in self.threads:
             thread.join()
 
-    def handleClient(self, clientSocket: socket.socket, clientAddress: tuple) -> None:
-        request = Request(Communication.getData(clientSocket, self.timeout))
+    def handleClient(self, client: Client) -> None:
+        request = Request(client.getData(self.timeout))
 
-        self.clientCallback(
-            request,
-            clientSocket,
-            clientAddress,
-        )
+        self.clientCallback(request, client)
 
-        self.clients.remove(clientSocket)
-        clientSocket.close()
+        self.clients.remove(client)
+        client.close()
