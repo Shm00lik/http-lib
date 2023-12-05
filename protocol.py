@@ -127,7 +127,7 @@ class Response:
             return mapper[statusCode]
 
         def __str__(self) -> str:
-            return str(self.value) + " " + self.name
+            return str(self.value) + " " + self.name.replace("_", " ").title()
 
         def __bool__(self) -> bool:
             return str(self.value).startswith("2")

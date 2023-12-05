@@ -1,12 +1,13 @@
 from server import Server
+from client import Client
 import protocol
 
 
-def handleClient(request: protocol.Request, clientSocket, clientAddress):
-    print(f"New client connected: {clientAddress}")
-    print(f"Request headers: {request.url}")
+def handleClient(request: protocol.Request, client: Client):
+    print(f"New client connected: {client.clientAddress}")
+    print(f"Request url: {request.url}")
 
-    clientSocket.sendall(protocol.Response(content="Hello!").generate().encode())
+    client.send(protocol.Response(content="Hello!"))
 
 
 server = Server(handleClient)
