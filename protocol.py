@@ -1,4 +1,5 @@
 from enum import Enum
+import json
 
 
 class Request:
@@ -94,17 +95,13 @@ class Request:
         return headers
 
     def getPayload(self) -> dict[str, str]:
-        payload: dict[str, str] = {}
+        if self.method != Request.RequestMethod.POST:
+            return {}
 
-        splitted = self.getBody().split("&")
-
-        if len(splitted) < 2:
-            return payload
-
-        for param in splitted:
-            payload[param.split("=")[0]] = param.split("=")[1]
-
-        return payload
+        try:
+            return json.loads(self.body)
+        except:
+            return {}
 
     def __str__(self) -> str:
         return str(self.splittedData)
