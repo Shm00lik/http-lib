@@ -147,14 +147,23 @@ class Response:
 
         self.statusCode: Response.StatusCode = statusCode
 
-    def setContent(self, content: str) -> None:
+    def setContent(self, content: str) -> "Response":
         self.content = content
 
         if len(self.content) > 0:
             self.setHeader("Content-Length", str(len(self.content)))
 
-    def setHeader(self, key: str, value: str) -> None:
+        return self
+
+    def setHeader(self, key: str, value: str) -> "Response":
         self.headers[key] = value
+
+        return self
+
+    def setStatusCode(self, statusCode: StatusCode) -> "Response":
+        self.statusCode = statusCode
+
+        return self
 
     def generate(self) -> str:
         response: str = "HTTP/1.1 " + str(self.statusCode) + "\r\n"
