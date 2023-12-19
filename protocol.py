@@ -19,28 +19,10 @@ class Request:
 
             return mapper[requestData.split(" ")[0]]
 
-    class RequestType(Enum):
-        REGISTER = "register"
-        LOGIN = "login"
-        DISCONNECT = "disconnect"
-
-        UNKNOWN = "unknown"
-
-        @staticmethod
-        def fromUrl(url: str):
-            mapper: dict = {v.value: v for v in Request.RequestType}
-            path = url.split("/")[1]
-
-            if path not in mapper:
-                return Request.RequestType.UNKNOWN
-
-            return mapper[path]
-
     def __init__(self, data: str) -> None:
         self.splittedData = data.split("\r\n")
 
         self.method: Request.RequestMethod = Request.RequestMethod.UNKNOWN
-        self.type: Request.RequestType = Request.RequestType.UNKNOWN
         self.url: str = ""
         self.params: dict[str, str] = {}
         self.body: str = ""
@@ -54,7 +36,6 @@ class Request:
 
     def parse(self) -> None:
         self.method = self.getMethod()
-        self.type = self.getType()
         self.url = self.getUrl()
         self.params = self.getParams()
         self.body = self.getBody()
@@ -63,9 +44,6 @@ class Request:
 
     def getMethod(self) -> RequestMethod:
         return Request.RequestMethod.fromRequestData(self.splittedData[0])
-
-    def getType(self) -> RequestType:
-        return Request.RequestType.fromUrl(self.getUrl())
 
     def getUrl(self) -> str:
         return self.splittedData[0].split(" ")[1].split("?")[0]
