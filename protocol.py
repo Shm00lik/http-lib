@@ -112,21 +112,34 @@ class Response:
         def __bool__(self) -> bool:
             return str(self.value).startswith("2")
 
+    class ResponseContentType(Enum):
+        TEXT = "text"
+        JSON = "json"
+
     def __init__(
         self,
-        content: str = "",
+        content: str | dict = "",
+        contentType: ResponseContentType = ResponseContentType.TEXT,
         statusCode: StatusCode = StatusCode.OK,
         headers: dict[str, str] = {},
     ) -> None:
         self.headers: dict[str, str] = headers
-        self.content = ""
+        self.content: str = ""
 
-        self.setContent(content)
+        self.setContent(content, contentType)
 
         self.statusCode: Response.StatusCode = statusCode
 
-    def setContent(self, content: str) -> "Response":
-        self.content = content
+    def setContent(
+        self, content: str | dict, contentType: ResponseContentType
+    ) -> "Response":
+        if contentType == Response.ResponseContentType.JSON:
+            self.setHeader("Content-Type", "application/json")
+            self.content = json.dumps(content)
+
+        else:
+            self.setHeader("Content-Type", "text/plain")
+            self.content = str(content)
 
         if len(self.content) > 0:
             self.setHeader("Content-Length", str(len(self.content)))
@@ -155,6 +168,24 @@ class Response:
 
         response += "\r\n"
         return response
+
+    @staticmethod
+    def error(
+        message: str, statusCode: StatusCode = StatusCode.BAD_REQUEST
+    ) -> "Response":
+        return Response(
+            content={"success": False, "message": message},
+            contentType=Response.ResponseContentType.JSON,
+            statusCode=statusCode,
+        )
+
+    @staticmethod
+    def success(message: str, statusCode: StatusCode = StatusCode.OK) -> "Response":
+        return Response(
+            content={"success": True, "message": message},
+            contentType=Response.ResponseContentType.JSON,
+            statusCode=statusCode,
+        )
 
     def __str__(self) -> str:
         return self.generate()
