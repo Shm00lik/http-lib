@@ -112,14 +112,14 @@ class Response:
         def __bool__(self) -> bool:
             return str(self.value).startswith("2")
 
-    class ResponseContentType(Enum):
+    class ContentType(Enum):
         TEXT = "text"
         JSON = "json"
 
     def __init__(
         self,
         content: str | dict = "",
-        contentType: ResponseContentType = ResponseContentType.TEXT,
+        contentType: ContentType = ContentType.TEXT,
         statusCode: StatusCode = StatusCode.OK,
         headers: dict[str, str] = {},
     ) -> None:
@@ -130,10 +130,8 @@ class Response:
 
         self.statusCode: Response.StatusCode = statusCode
 
-    def setContent(
-        self, content: str | dict, contentType: ResponseContentType
-    ) -> "Response":
-        if contentType == Response.ResponseContentType.JSON:
+    def setContent(self, content: str | dict, contentType: ContentType) -> "Response":
+        if contentType == Response.ContentType.JSON:
             self.setHeader("Content-Type", "application/json")
             self.content = json.dumps(content)
 
@@ -175,7 +173,7 @@ class Response:
     ) -> "Response":
         return Response(
             content={"success": False, "message": message},
-            contentType=Response.ResponseContentType.JSON,
+            contentType=Response.ContentType.JSON,
             statusCode=statusCode,
         )
 
@@ -183,7 +181,7 @@ class Response:
     def success(message: str, statusCode: StatusCode = StatusCode.OK) -> "Response":
         return Response(
             content={"success": True, "message": message},
-            contentType=Response.ResponseContentType.JSON,
+            contentType=Response.ContentType.JSON,
             statusCode=statusCode,
         )
 
