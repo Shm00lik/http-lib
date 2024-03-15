@@ -9,6 +9,8 @@ class Request:
         PUT = "PUT"
         DELETE = "DELETE"
         UNKNOWN = "UNKNOWN"
+        OPTIONS = "OPTIONS"
+
 
         @staticmethod
         def fromRequestData(requestData: str):
@@ -23,7 +25,7 @@ class Request:
         self.splittedData = data.split("\r\n")
 
         self.method: Request.RequestMethod = Request.RequestMethod.UNKNOWN
-        self.url: str = ""
+        self.url: str = [""]
         self.params: dict[str, str] = {}
         self.body: str = ""
         self.headers: dict[str, str] = {}
@@ -45,8 +47,8 @@ class Request:
     def getMethod(self) -> RequestMethod:
         return Request.RequestMethod.fromRequestData(self.splittedData[0])
 
-    def getUrl(self) -> str:
-        return self.splittedData[0].split(" ")[1].split("?")[0]
+    def getUrl(self) -> list[str]:
+        return self.splittedData[0].split(" ")[1].split("?")[0].split("/")[1:]
 
     def getParams(self) -> dict[str, str]:
         params: dict[str, str] = {}
@@ -174,7 +176,7 @@ class Response:
 
     @staticmethod
     def error(
-        message: str, statusCode: StatusCode = StatusCode.BAD_REQUEST
+        message: str, statusCode: StatusCode = StatusCode.OK
     ) -> "Response":
         return Response(
             content={"success": False, "message": message},
