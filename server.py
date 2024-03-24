@@ -58,7 +58,7 @@ class Server:
 
         if not self.hasStopped:
             self.stop()
-
+    
     def accept(self) -> None:
         clientSocket, clientAddress = self.socket.accept()
 
@@ -74,11 +74,10 @@ class Server:
         self.shouldRun = False
         self.hasStopped = True
 
-        self.serverThread.join()
-        self.socket.close()
-
         for thread in self.threads:
             thread.join()
+
+        self.socket.close()
 
     def handleClient(self, client: Client) -> None:
         request = Request(client.getData(self.timeout))
