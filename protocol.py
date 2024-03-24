@@ -11,7 +11,6 @@ class Request:
         UNKNOWN = "UNKNOWN"
         OPTIONS = "OPTIONS"
 
-
         @staticmethod
         def fromRequestData(requestData: str):
             mapper: dict = {v.value: v for v in Request.RequestMethod}
@@ -25,7 +24,7 @@ class Request:
         self.splittedData = data.split("\r\n")
 
         self.method: Request.RequestMethod = Request.RequestMethod.UNKNOWN
-        self.url: str = [""]
+        self.url: list[str] = [""]
         self.params: dict[str, str] = {}
         self.body: str = ""
         self.headers: dict[str, str] = {}
@@ -86,6 +85,12 @@ class Request:
     def __str__(self) -> str:
         return str(self.splittedData)
 
+    def __setattr__(self, name, value):
+        self.__dict__[name] = value
+
+    def __getattribute__(self, __name: str):
+        return super().__getattribute__(__name)
+
 
 class Response:
     """
@@ -134,13 +139,15 @@ class Response:
 
         self.statusCode: Response.StatusCode = statusCode
 
-    def setContent(self, content: str | dict, contentType: ContentType) -> "Response":
+    def setContent(
+        self, content: str | dict | list, contentType: ContentType
+    ) -> "Response":
         if contentType == Response.ContentType.JSON:
             self.setHeader("Content-Type", "application/json")
             self.content = json.dumps(content)
 
         else:
-            if isinstance(content, dict):
+            if isinstance(content, dict) or isinstance(content, list):
                 return self.setContent(content, Response.ContentType.JSON)
 
             self.setHeader("Content-Type", "text/plain")
@@ -176,7 +183,7 @@ class Response:
 
     @staticmethod
     def error(
-        message: str, statusCode: StatusCode = StatusCode.OK
+        message: str | dict | list, statusCode: StatusCode = StatusCode.OK
     ) -> "Response":
         return Response(
             content={"success": False, "message": message},
@@ -185,7 +192,15 @@ class Response:
         )
 
     @staticmethod
-    def success(message: str, statusCode: StatusCode = StatusCode.OK) -> "Response":
+    def success(
+        message: str | dict | list,
+        statusCode: StatusCode = StatusCode.OK,
+        vprint: bool = False,
+    ) -> "Response":
+        if vprint:
+            print(message)
+            print(type(message))
+
         return Response(
             content={"success": True, "message": message},
             contentType=Response.ContentType.JSON,
